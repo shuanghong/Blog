@@ -84,12 +84,31 @@
 
 
 
+<meta name="description" content="std::move 使用场景
+STL 容器的相关函数如 vector::push_back, 会对参数对象进行复制, 这就会造成对象内存的额外创建. 原意是想把参数 push_back 进去就行了. 如下代码:
+int main(void) 
+{
+    std::string str = &amp;quot;Hello&amp;quot;;
+    std::vector&amp;lt;std::string&amp;gt;">
 <meta property="og:type" content="website">
 <meta property="og:title" content="HongShuang's blog">
-<meta property="og:url" content="http://yoursite.com/archives/2018/06/index.html">
+<meta property="og:url" content="http://yoursite.com/archive/std move.html">
 <meta property="og:site_name" content="HongShuang's blog">
+<meta property="og:description" content="std::move 使用场景
+STL 容器的相关函数如 vector::push_back, 会对参数对象进行复制, 这就会造成对象内存的额外创建. 原意是想把参数 push_back 进去就行了. 如下代码:
+int main(void) 
+{
+    std::string str = &amp;quot;Hello&amp;quot;;
+    std::vector&amp;lt;std::string&amp;gt;">
+<meta property="og:updated_time" content="2018-05-18T06:29:00.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HongShuang's blog">
+<meta name="twitter:description" content="std::move 使用场景
+STL 容器的相关函数如 vector::push_back, 会对参数对象进行复制, 这就会造成对象内存的额外创建. 原意是想把参数 push_back 进去就行了. 如下代码:
+int main(void) 
+{
+    std::string str = &amp;quot;Hello&amp;quot;;
+    std::vector&amp;lt;std::string&amp;gt;">
 
 
 
@@ -107,7 +126,13 @@
   };
 </script>
 
-  <title> 归档 | HongShuang's blog </title>
+  <title>
+  
+
+  
+     | HongShuang's blog
+  
+</title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -128,7 +153,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left  page-archive  ">
+  <div class="container one-collumn sidebar-position-left  ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -206,66 +231,128 @@
           <div id="content" class="content">
             
 
-  <section id="posts" class="posts-collapse">
-    <span class="archive-move-on"></span>
-
-    <span class="archive-page-counter">
-      
-      
-      
-        
-      
-      嗯..! 目前共计 4 篇日志。 继续努力。
-    </span>
-
+  <div id="posts" class="posts-expand">
     
-
-      
-      
-      
-
-      
-        
-        <div class="collection-title">
-          <h2 class="archive-year motion-element" id="archive-year-2018">2018</h2>
-        </div>
-      
-      
-
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/2018/06/10/std move/" itemprop="url">
-              
-                <span itemprop="name">未命名</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-06-10T22:14:07+08:00"
-              content="2018-06-10" >
-          06-10
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
     
+      <h2 id="std-move-使用场景"><a href="#std-move-使用场景" class="headerlink" title="std::move 使用场景"></a>std::move 使用场景</h2><ul>
+<li><p>STL 容器的相关函数如 vector::push_back, 会对参数对象进行复制, 这就会造成对象内存的额外创建. 原意是想把参数 push_back 进去就行了. 如下代码:</p>
+<pre><code>int main(void) 
+{
+    std::string str = &quot;Hello&quot;;
+    std::vector&lt;std::string&gt; v;
 
-  </section>
+    v.push_back(str);   // call  push_back(const T&amp;) 
+    std::cout &lt;&lt; &quot;After copy, str is \&quot;&quot; &lt;&lt; str &lt;&lt; &quot;\&quot;\n&quot;;
 
-  
+    v.push_back(std::move(str));    //rvalue reference, push_back(T&amp;&amp;)
+    std::cout &lt;&lt; &quot;After move, str is &quot; &lt;&lt; str &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;The contents of the vector are &quot; &lt;&lt; v[0] &lt;&lt; &quot;,&quot; &lt;&lt; v[1] &lt;&lt; std::endl;
+}
+</code></pre></li>
+<li><p>参数类型是 std::unique_ptr. </p>
+</li>
+</ul>
+<p>std::unique_ptr 具有对其所管理的对象资源的独占性, 不允许拷贝 std::unique_ptr. 即不能调用拷贝构造函数、在参数传递时不能按值传递 unique_ptr、不能将其传给需要拷贝副本的STL算法使用. 所以在这三个场景下都需要使用 std::move() 来转移所有权. 如下代码:</p>
+<pre><code>#include &lt;memory&gt;
+#include &lt;vector&gt;
+class Socket
+{
+public:
+    explicit Socket(int sockfd)
+    :m_sockfd(sockfd)
+    {
+    }
+    ~Socket()
+    {
+    } 
+private:
+    int m_sockfd;
+};
 
+int main()
+{  
+    std::unique_ptr&lt;Socket&gt; socket1(new Socket(0));  
+    std::vector&lt;std::unique_ptr&lt;Socket&gt;&gt; sockets;  
+    sockets.push_back(socket1);  // 发生了 std::unique_ptr 的拷贝
+    return 0;
+}
+</code></pre><p>编译器错误提示如下:</p>
+<pre><code>/usr/local/include/c++/5.2.0/bits/unique_ptr.h:356:7: note: declared here
+       unique_ptr(const unique_ptr&amp;) = delete;
+</code></pre><p>将 main() 修改如下则可以编译通过.</p>
+<pre><code>int main()
+{  
+    std::unique_ptr&lt;Socket&gt; socket1(new Socket(0));  
+    std::vector&lt;std::unique_ptr&lt;Socket&gt;&gt; sockets;  
+    sockets.push_back(std::move(socket1));  // 触发移动语义, 转移了 socket1 的所有权
+    return 0;
+}
+</code></pre><p>同样也可以修改如下:</p>
+<pre><code>int main()
+{  
+    std::vector&lt;std::unique_ptr&lt;Socket&gt;&gt; sockets;  
+    sockets.push_back( std::unique_ptr&lt;Socket&gt; (new Socket(0)) ); // 匿名临时变量也是右值, 调用 std::unique_ptr 的移动构造函数
+    return 0;
+}
+</code></pre><p>std::unique_ptr 参数传递时也不能按值传递. 代码如下:</p>
+<pre><code>#include &lt;memory&gt;
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+
+class Socket
+{
+public:
+    explicit Socket(int sockfd)
+    :m_sockfd(sockfd)
+    {
+    }
+    ~Socket()
+    {
+    }
+
+    int getFd(){return m_sockfd;}
+
+private:
+    int m_sockfd;
+};
+
+int getSocketFd(std::unique_ptr&lt;Socket&gt; socket)
+{
+    return socket-&gt;getFd();
+}
+
+int main()
+{  
+    std::unique_ptr&lt;Socket&gt; socket1 = std::make_unique&lt;Socket&gt;(0);  
+    int fd = getSocketFd(socket1);
+    std::cout &lt;&lt; fd &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre><p>编译器错误提示如下:</p>
+<pre><code>main.cpp:30:33: error: use of deleted function &apos;std::unique_ptr&lt;_Tp, _Dp&gt;::unique_ptr(const std::unique_ptr&lt;_Tp, _Dp&gt;&amp;) [with _Tp = Socket; _Dp = std::default_delete&lt;Socket&gt;]&apos;
+     int fd = getSocketFd(socket1); 
+In file included from /usr/local/include/c++/5.2.0/memory:81:0,
+             from main.cpp:1:
+/usr/local/include/c++/5.2.0/bits/unique_ptr.h:356:7: note: declared here
+       unique_ptr(const unique_ptr&amp;) = delete;
+</code></pre><p>修改如下:</p>
+<pre><code>int getSocketFd(std::unique_ptr&lt;Socket&gt; socket)
+{
+    std::unique_ptr&lt;Socket&gt; skt = std::move(socket);
+    return skt-&gt;getFd();
+}
+
+int main()
+{  
+    std::unique_ptr&lt;Socket&gt; socket1 = std::make_unique&lt;Socket&gt;(0);  
+    int fd1 = getSocketFd(std::move(socket1));
+
+    std::cout &lt;&lt; fd1 &lt;&lt; std::endl;
+    return 0;
+}  
+</code></pre>
+    
+  </div>
 
 
           </div>
@@ -273,6 +360,10 @@
 
 
           
+  <div class="comments" id="comments">
+    
+  </div>
+
 
         </div>
         
@@ -304,7 +395,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">3</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -439,12 +530,6 @@
 
 
   
-  
-    <script type="text/javascript" id="motion.page.archive">
-      $('.archive-year').velocity('transition.slideLeftIn');
-    </script>
-  
-
 
   
 
