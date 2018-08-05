@@ -1,0 +1,1034 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="移动语义(move)引入背景移动语义的引入是为了解决在进行大量数据复制的时候, 将动态内存的所有权直接转让出去, 避免大量的无用的拷贝操作. 如下面两种场景:
+swap的实现, 交换两个对象.template&amp;lt;typename T&amp;gt;
+inline void swap(T&amp;amp; a, T&amp;amp; b)
+{
+    T temp(a);        // 调用拷贝构造函数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++11 之右值引用、移动语义">
+<meta property="og:url" content="http://yoursite.com/2018/04/01/C++11 之右值引用、移动语义/index.html">
+<meta property="og:site_name" content="HongShuang's blog">
+<meta property="og:description" content="移动语义(move)引入背景移动语义的引入是为了解决在进行大量数据复制的时候, 将动态内存的所有权直接转让出去, 避免大量的无用的拷贝操作. 如下面两种场景:
+swap的实现, 交换两个对象.template&amp;lt;typename T&amp;gt;
+inline void swap(T&amp;amp; a, T&amp;amp; b)
+{
+    T temp(a);        // 调用拷贝构造函数">
+<meta property="og:updated_time" content="2018-06-10T14:26:39.569Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++11 之右值引用、移动语义">
+<meta name="twitter:description" content="移动语义(move)引入背景移动语义的引入是为了解决在进行大量数据复制的时候, 将动态内存的所有权直接转让出去, 避免大量的无用的拷贝操作. 如下面两种场景:
+swap的实现, 交换两个对象.template&amp;lt;typename T&amp;gt;
+inline void swap(T&amp;amp; a, T&amp;amp; b)
+{
+    T temp(a);        // 调用拷贝构造函数">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> C++11 之右值引用、移动语义 | HongShuang's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">HongShuang's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                C++11 之右值引用、移动语义
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-04-01T09:00:00+08:00" content="2018-04-01">
+              2018-04-01
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index">
+                    <span itemprop="name">C++</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/C/右值引用/" itemprop="url" rel="index">
+                    <span itemprop="name">右值引用</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="移动语义-move-引入背景"><a href="#移动语义-move-引入背景" class="headerlink" title="移动语义(move)引入背景"></a>移动语义(move)引入背景</h2><p>移动语义的引入是为了解决在进行大量数据复制的时候, 将动态内存的所有权直接转让出去, 避免大量的无用的拷贝操作. 如下面两种场景:</p>
+<h3 id="swap的实现-交换两个对象"><a href="#swap的实现-交换两个对象" class="headerlink" title="swap的实现, 交换两个对象."></a>swap的实现, 交换两个对象.</h3><pre><code>template&lt;typename T&gt;
+inline void swap(T&amp; a, T&amp; b)
+{
+    T temp(a);        // 调用拷贝构造函数
+    a=b;            // 调用拷贝赋值运算符
+    b=temp;            // 调用拷贝赋值运算符
+}
+</code></pre><p>swap 实现的过程中调用了一次拷贝构造函数和两次赋值运算, 然而这对于要实现交换的目的来说, 是没有必要的.<br>如果 T 是一个带有指针成员的类对象, 则会出现大量无意义的拷贝.</p>
+<h3 id="不必要的拷贝-返回临时对象"><a href="#不必要的拷贝-返回临时对象" class="headerlink" title="不必要的拷贝,返回临时对象"></a>不必要的拷贝,返回临时对象</h3><p>以string类的某一实现为例:</p>
+<pre><code>class String
+{
+public:
+    String()
+    : m_dataptr(new char[1])
+    {
+        std::cout &lt;&lt; &quot;constructor()&quot; &lt;&lt; std::endl;
+        *m_dataptr = &apos;\0&apos;;
+    }
+    String(const char *str)
+    : m_dataptr(new char[strlen(str) + 1])
+    {
+        std::cout &lt;&lt; &quot;constructor(char *)&quot; &lt;&lt; std::endl;
+        strcpy(m_dataptr, str);
+    }
+    String(const String &amp;rhs)
+    : m_dataptr(new char[rhs.size() + 1])
+    {
+        std::cout &lt;&lt; &quot;copy constructor&quot; &lt;&lt; std::endl;
+        strcpy(m_dataptr, rhs.c_str());
+    }
+
+    ~String() noexcept
+    {
+        delete[] m_dataptr;
+    }
+
+    String&amp; operator=(const String&amp; rhs)
+    {
+      std::cout &lt;&lt; &quot;copy operator=&quot; &lt;&lt; std::endl;
+
+      char* tmp = rhs.m_dataptr;
+      m_dataptr = new char[rhs.size() + 1];
+      strcpy(m_dataptr, rhs.c_str());
+      delete[] tmp;
+
+      return *this;
+    }
+...
+}
+
+String getString()
+{
+    String str(&quot;string&quot;);
+    return str;            //return &quot;string&quot;;
+}
+
+int main(int argc, char *argv[])
+{
+    std::cout &lt;&lt; &quot;------------------------------&quot; &lt;&lt; std::endl;
+
+    String str = getString();        // 1)
+    std::cout &lt;&lt; &quot;******************************&quot; &lt;&lt; std::endl;
+
+    str = getString();                // 2)
+    std::cout &lt;&lt; &quot;==============================&quot; &lt;&lt; std::endl;
+
+    return 0;
+}
+</code></pre><p>程序输出如下:</p>
+<pre><code>------------------------------
+constructor(char *)                // 1) getString() 里的 str 构造
+******************************
+constructor(char *)                // 2) getString() 里的 str 构造
+copy operator=                    // 3) getString() 返回值(临时对象, 右值)赋值给左值
+destructor                        // 4) 临时对象析构
+==============================
+destructor                        // 5) str 析构
+</code></pre><ul>
+<li>对于1)对象初始化, 由于编译器的返回值优化(RVO), 只调用了string的构造函数, 没有返回时临时对象的产生</li>
+<li>对于2)赋值操作, getString()返回临时对象并赋值给str, 调用了拷贝赋值运算符, 同样也会有拷贝操作.</li>
+</ul>
+<h3 id="容器-vector-的操作"><a href="#容器-vector-的操作" class="headerlink" title="容器 vector 的操作"></a>容器 vector 的操作</h3><pre><code>vector&lt;int&gt; doubleValues (const vector&lt;int&gt;&amp; v)
+{
+     vector&lt;int&gt; new_values;
+     for (auto x : v)
+         new_values.push_back(2 * x);    
+     return new_values;
+}
+
+int main()
+{
+     vector&lt;int&gt; v;
+     for ( int i = 0; i &lt; 2; i++ )
+     {
+         v.push_back(i);
+     }
+     v = doubleValues(v);
+}
+</code></pre><ul>
+<li>doubleValues() 返回时会产生临时的vector, 这个可以被编译器优化(RVO)</li>
+<li>v = doubleValues, 将临时变量赋值给v, 则无法避免. 需要重新分配内存空间,且需要迭代整个vector.</li>
+</ul>
+<h2 id="右值引用、右值"><a href="#右值引用、右值" class="headerlink" title="右值引用、右值"></a>右值引用、右值</h2><p>为了实现移动语义, C++11 引入了右值引用, 即绑定到右值的引用, 采用 T&amp;&amp; 语法形式. 传统的引用被称为左值引用, 采用 T&amp; 语法形式.</p>
+<pre><code>int i = 0;
+int&amp; j = i;        // 左值引用 j 绑定到左值 i
+int&amp;&amp; k = 0;    // 右值引用 k 绑定到右值 0
+</code></pre><h3 id="左值与右值"><a href="#左值与右值" class="headerlink" title="左值与右值"></a>左值与右值</h3><p>在C++11中, 所有的表达式和变量的值必属于左值、将亡值、纯右值三者之一.</p>
+<h4 id="左值-一般位于赋值符号的左边-有名字的值-可以使用-amp-操作符取地址"><a href="#左值-一般位于赋值符号的左边-有名字的值-可以使用-amp-操作符取地址" class="headerlink" title="左值: 一般位于赋值符号的左边, 有名字的值, 可以使用&amp;操作符取地址."></a>左值: 一般位于赋值符号的左边, 有名字的值, 可以使用&amp;操作符取地址.</h4><pre><code>void std::move(T&amp;&amp; param)
+{
+    ...    //param有名字, 在函数内部仍然是左值, 即使声明它时用的是右值引用
+}
+</code></pre><p>如 <a href="https://www.zhihu.com/question/35100630" target="_blank" rel="external">https://www.zhihu.com/question/35100630</a>中的代码:</p>
+<pre><code>class Foo
+{
+private: 
+    string data;
+public:
+    Foo(string&amp;&amp; s)
+    {    
+        data = s; //这里调用了string的拷贝构造函数, 因为 s 还是左值.
+        ....
+    }
+... 
+}
+</code></pre><h4 id="右值-一般位于赋值符号的右边-没有名字的值-不能取地址-临时值"><a href="#右值-一般位于赋值符号的右边-没有名字的值-不能取地址-临时值" class="headerlink" title="右值: 一般位于赋值符号的右边, 没有名字的值, 不能取地址, 临时值."></a>右值: 一般位于赋值符号的右边, 没有名字的值, 不能取地址, 临时值.</h4><pre><code>String getString()
+{
+    String str(&quot;string&quot;);
+    return str;            //返回临时对象, 是右值
+}
+</code></pre><h3 id="相关问题"><a href="#相关问题" class="headerlink" title="相关问题"></a>相关问题</h3><p>a++ 与 ++a 的实现区别:</p>
+<pre><code>a++:
+{   
+    int temp = a;   
+    aa=a+1;   
+    return temp; //返回临时变量, 右值
+}
+
+++a:
+{   
+    int a = a+1;   
+    return &amp;a; //返回左值
+}
+</code></pre><p>++a 修改了a的值, 但还是代表原来那个持久对象, 是左值; a++ 则返回一个临时变量, 是右值.</p>
+<pre><code>++(a--)    // 是非法的, 因为 ++ 操作要求一个可修改的左值, 而a--是右值
+</code></pre><p>同时也能发现</p>
+<pre><code>for(int i=0;i&lt;10;++i) 比 for(int i=0;i&lt;10;i++) 效率高, 前者不会产生i的临时变量.
+</code></pre><h3 id="右值引用的引入"><a href="#右值引用的引入" class="headerlink" title="右值引用的引入"></a>右值引用的引入</h3><p>C++11 引入右值引用的目的:</p>
+<ul>
+<li>消除两个对象交换时不必要的对象拷贝, 以及函数返回对象时临时对象的拷贝</li>
+<li>能够更简洁明确地定义泛型函数</li>
+</ul>
+<p>在C++11之前, 引用类型如果想绑定到临时对象上, 只能使用 const 引用.</p>
+<pre><code>const String&amp; str = getString();        // OK
+String&amp; str = getName();                 // NOT ok
+</code></pre><p>临时对象是一个即将消失的对象, 不可以被改变, 所以将非const引用绑定到临时对象上是不允许的. 有了右值引用之后,</p>
+<pre><code>String&amp;&amp; str = getName();                 // also ok
+</code></pre><p>关于引用类型和对象的绑定, 有如下规则:</p>
+<ol>
+<li>非const左值引用只能绑定到非const左值，不能绑定到const右值、非const右值和const左值.</li>
+<li>const左值引用可以绑定到任何类型，包括const左值、非const左值、const右值和非const右值，属于万能引用类型. 其中绑定const右值的情况比较少, 但是语法上是可行的,比如const int &amp;a = 1, 但是通常一般都会直接使用int &amp;a = 1.</li>
+<li>非const右值引用不能绑定到任何左值和const右值，只能绑定非const右值.</li>
+<li><p>const右值引用类型仅是为了语法的完整性而设计的. 比如</p>
+<pre><code>const String &amp;&amp;str = getName();
+</code></pre><p> 但是右值引用类型的引入主要是为了移动语义, 而移动语义需要右值引用是可以被修改的, 因此const右值引用类型没有实际意义.</p>
+</li>
+</ol>
+<p>此外, 有了右值引用, 在函数重载时就可以根据是左值引用和右值引用来区分. 移动构造函数和移动赋值运算符以此实现了对拷贝构造函数和拷贝赋值运算符的重载.</p>
+<pre><code>void fun(String &amp;str)
+{
+    cout &lt;&lt; &quot;left reference&quot; &lt;&lt; endl;
+}
+
+void fun(String &amp;&amp;str)
+{
+    cout &lt;&lt; &quot;right reference&quot; &lt;&lt; endl;
+}
+
+int main() { 
+    String a(&quot;456&quot;); 
+    fun(a);             // 参数是左值引用, 调用 fun(String &amp;str)
+    fun(getString());     // 参数是右值引用, 调用 fun(String &amp;&amp;str)
+    return 1;
+}
+</code></pre><p>参考: <a href="http://blog.jobbole.com/89078/" target="_blank" rel="external">http://blog.jobbole.com/89078/</a></p>
+<h2 id="Move-语义的实现"><a href="#Move-语义的实现" class="headerlink" title="Move 语义的实现"></a>Move 语义的实现</h2><h3 id="移动构造函数"><a href="#移动构造函数" class="headerlink" title="移动构造函数"></a>移动构造函数</h3><p>移动构造函数避免了当函数返回对象产生临时对象时的拷贝操作, 其参数与拷贝构造函数的参数不同之处在于使用右值引用作为参数, 且不再是 const, 因为在移动构造函数里面需要修改右值的内容. 下面是 String 类的实现</p>
+<pre><code>String(String&amp;&amp; rhs) noexcept    // 移动操作不抛出任何异常
+: m_dataptr(rhs.m_dataptr)
+{
+    std::cout &lt;&lt; &quot;move constructor&quot; &lt;&lt; std::endl;
+    rhs.m_dataptr = nullptr;
+}
+</code></pre><p>在移动构造函数中, 窃取了rhs对象已经申请的内存, 并将rhs的指针赋值为 nullptr(保证移动后源对象处于可析构状态), 实现了资源所有权的转换.<br>以前面背景2, String的测试代码为例, 比较存在移动构造函数的情况下的详细调用过程.</p>
+<pre><code>int main(int argc, char *argv[])
+{
+    std::cout &lt;&lt; &quot;------------------------------&quot; &lt;&lt; std::endl;
+
+    String str1 = getString();        // 返回临时对象
+    std::cout &lt;&lt; &quot;******************************&quot; &lt;&lt; std::endl;
+    ...    
+    return 0;
+}
+</code></pre><p>打开 -fno-elide-constructors 编译选项, 禁止编译器优化, 没有移动构造函数时程序输出如下:</p>
+<pre><code>------------------------------
+constructor(char *)            // 1) getString() 里的 str 构造
+copy constructor            // 2) getString() 产生临时对象并返回, 调用拷贝构造函数
+destructor                    // 3) getString() 里的 str 析构
+copy constructor            // 4) 临时对象构造 str1, 调用拷贝构造函数
+destructor                    // 5) 临时对象析构
+******************************
+destructor                    // 6) str1 析构
+</code></pre><p>当移动构造函数存在时, 程序输出如下: </p>
+<pre><code>------------------------------
+constructor(char *)
+move constructor            // 临时对象的产生调用了移动构造函数
+destructor
+move constructor            // 临时对象构造 str1也调用了移动构造函数
+destructor
+******************************
+destructor
+</code></pre><p>PS. <strong>提供移动构造函数的同时也会提供一个拷贝构造函数, 以防止移动不成功的时候还能拷贝构造, 使代码更安全.</strong></p>
+<p>注: 在移动构造函数内部, 如果具名使用参数 rhs, 则 rhs 仍是一个左值. 如下面代码:</p>
+<pre><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+class Foo
+{
+public:
+    Foo(const string&amp; s): data(s) {std::cout &lt;&lt; &quot;copy constructor&quot; &lt;&lt; std::endl;}
+    Foo(string&amp;&amp; s)
+    { 
+        data = s;     // s 具名, 是左值, 调用 string 的拷贝构造函数, 应换成 data(std::move(s))
+        std::cout &lt;&lt; &quot;move operator=&quot; &lt;&lt; std::endl;
+    }
+
+private: 
+    string data;
+};
+
+int main()
+{
+    string s1 = &quot;abc&quot;;
+    Foo f1 = Foo(std::move(s1));    // 调用 Foo 移动构造函数
+    return 0;
+}
+</code></pre><p>参考: <a href="https://www.zhihu.com/question/35100630" target="_blank" rel="external">https://www.zhihu.com/question/35100630</a></p>
+<h3 id="移动赋值运算符"><a href="#移动赋值运算符" class="headerlink" title="移动赋值运算符"></a>移动赋值运算符</h3><p>赋值运算符避免了赋值时的拷贝操作, 与拷贝赋值运算符不同的是, 其参数也是右值引用类型. 下面是 String 类的实现:</p>
+<pre><code>String&amp; operator=(String&amp;&amp; rhs) noexcept
+{
+    std::cout &lt;&lt; &quot;move operator=&quot; &lt;&lt; std::endl;
+    if (this != &amp;rhs)
+    {
+        delete[] m_dataptr;
+        m_dataptr = rhs.m_dataptr;
+        rhs.m_dataptr = nullptr;
+    }
+    return *this;
+}
+</code></pre><p>赋值运算符同样窃取右值资源的所有权, 避免分配内存的操作.</p>
+<p>同样以前面String的测试代码为例, 比较赋值操作时的调用过程.</p>
+<pre><code>int main(int argc, char *argv[])
+{
+    std::cout &lt;&lt; &quot;------------------------------&quot; &lt;&lt; std::endl;
+
+    String str = getString();
+    std::cout &lt;&lt; &quot;******************************&quot; &lt;&lt; std::endl;
+
+    str = getString();        // 赋值操作
+    std::cout &lt;&lt; &quot;==============================&quot; &lt;&lt; std::endl;
+
+    return 0;
+}
+</code></pre><p>没有赋值运算符时, 程序输出如下:</p>
+<pre><code>------------------------------
+constructor(char *)
+******************************
+constructor(char *)
+copy operator=            // 调用拷贝赋值运算符
+destructor
+==============================
+destructor
+</code></pre><p>存在赋值运算符时, 程序输出如下:</p>
+<pre><code>------------------------------
+constructor(char *)
+******************************
+constructor(char *)
+move operator=            // 调用移动赋值运算符, 避免拷贝.
+destructor
+==============================
+destructor
+</code></pre><h3 id="std-move"><a href="#std-move" class="headerlink" title="std::move()"></a>std::move()</h3><p>编译器只对右值引用才能调用移动构造函数和移动赋值运算符, 如果已知一个命名对象(左值引用)不再被使用而想对它调用移动构造函数和移动赋值函数, 则可以通过标准库函数 std::move() 来实现.<br>std::move() 本身并不移动任何东西, 它只是将左值转换成右值并返回参数的右值引用, 其实现如下:</p>
+<pre><code>template&lt;typename T&gt; 
+decltype(auto) move(T&amp;&amp; param)
+{
+    using ReturnType = remove_reference_t&lt;T&gt;&amp;&amp;;
+    return static_cast&lt;ReturnType&gt;(param);
+}
+</code></pre><p>参考: <a href="https://www.zhihu.com/question/50652989" target="_blank" rel="external">https://www.zhihu.com/question/50652989</a></p>
+<p>std::move() 通常用于触发移动语义, 即告诉编译器调用移动构造函数或移动赋值运算符.<br>C++11 标准库引入了std::move(), 则前面背景1 swap() 的实现改成了:</p>
+<pre><code>template&lt;typename T&gt;
+void swap(T&amp; a, T&amp; b)
+{
+     T tmp = std::move(a);
+     a = std::move(b);
+     b = std::move(tmp);
+}
+</code></pre><p>对于下面String的测试代码:</p>
+<pre><code>String a;                             //调用缺省构造函数
+String b = a;                         //调用拷贝构造函数  
+String c = std::move(b);              //调用移动构造函数  
+b = a;                                 //调用拷贝赋值运算符  
+c = std::move(b);                      //调用移动赋值运算符
+</code></pre><p>注:</p>
+<pre><code>String c = std::move(b);    // 触发c的移动构造函数, 执行后b的资源被窃取. 
+String &amp;&amp;c = std::move(b);    // 执行后b的资源仍可用, 如前面所述, std::move()本身并不移动任何东西, 通过右值引用拿到了b.
+</code></pre><p>对于前面背景3, 返回 vector对象的拷贝问题, C++11 标准库对所有容器均实现了移动操作.</p>
+<h2 id="std-move-使用场景"><a href="#std-move-使用场景" class="headerlink" title="std::move 使用场景"></a>std::move 使用场景</h2><ol>
+<li><p>STL 容器的相关函数如 vector::push_back, 会对参数对象进行复制, 这就会造成对象内存的额外创建. 原意是想把参数 push_back 进去就行了. 如下代码:</p>
+<pre><code>int main(void) 
+{
+    std::string str = &quot;Hello&quot;;
+    std::vector&lt;std::string&gt; v;
+
+    v.push_back(str);   // call  push_back(const T&amp;) 
+    std::cout &lt;&lt; &quot;After copy, str is \&quot;&quot; &lt;&lt; str &lt;&lt; &quot;\&quot;\n&quot;;
+
+    v.push_back(std::move(str));    //rvalue reference, push_back(T&amp;&amp;)
+    std::cout &lt;&lt; &quot;After move, str is &quot; &lt;&lt; str &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;The contents of the vector are &quot; &lt;&lt; v[0] &lt;&lt; &quot;,&quot; &lt;&lt; v[1] &lt;&lt; std::endl;
+}
+
+输出:
+After copy, str is &quot;Hello&quot;
+After move, str is 
+The contents of the vector are Hello,Hello
+</code></pre></li>
+<li><p>参数类型是 std::unique_ptr.</p>
+<p> std::unique_ptr 具有对其所管理的对象资源的独占性, 不允许拷贝 std::unique_ptr. 即不能调用拷贝构造函数、在参数传递时不能按值传递 unique_ptr、不能将其传给需要拷贝副本的STL算法使用. 所以在这三个场景下都需要使用 std::move() 来转移所有权. 如下代码: </p>
+<pre><code>#include &lt;memory&gt;
+#include &lt;vector&gt;
+class Socket
+{
+public:
+    explicit Socket(int sockfd)
+    :m_sockfd(sockfd)
+    {
+    }
+    ~Socket()
+    {
+    } 
+private:
+    int m_sockfd;
+};
+
+int main()
+{  
+    std::unique_ptr&lt;Socket&gt; socket1(new Socket(0));  
+    std::vector&lt;std::unique_ptr&lt;Socket&gt;&gt; sockets;  
+    sockets.push_back(socket1);  // 发生了 std::unique_ptr 的拷贝
+    return 0;
+}
+</code></pre><p> 编译器错误提示如下:</p>
+<pre><code>/usr/local/include/c++/5.2.0/bits/unique_ptr.h:356:7: note: declared here
+       unique_ptr(const unique_ptr&amp;) = delete;
+</code></pre><p> 将 main() 修改如下则可以编译通过.</p>
+<pre><code>int main()
+{  
+    std::unique_ptr&lt;Socket&gt; socket1(new Socket(0));  
+    std::vector&lt;std::unique_ptr&lt;Socket&gt;&gt; sockets;  
+    sockets.push_back(std::move(socket1));  // 触发移动语义, 转移了 socket1 的所有权
+    return 0;
+}
+</code></pre><p> 同样也可以修改如下:</p>
+<pre><code>int main()
+{  
+    std::vector&lt;std::unique_ptr&lt;Socket&gt;&gt; sockets;  
+    sockets.push_back( std::unique_ptr&lt;Socket&gt; (new Socket(0)) ); // 匿名临时变量也是右值, 调用 std::unique_ptr 的移动构造函数
+    return 0;
+}
+</code></pre><p> std::unique_ptr 参数传递时也不能按值传递. 代码如下:</p>
+<pre><code>#include &lt;memory&gt;
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+class Socket
+{
+public:
+    explicit Socket(int sockfd)
+    :m_sockfd(sockfd)
+    {
+    }
+    ~Socket()
+    {
+    }
+
+    int getFd(){return m_sockfd;}
+
+private:
+    int m_sockfd;
+};
+
+int getSocketFd(std::unique_ptr&lt;Socket&gt; socket)
+{
+    return socket-&gt;getFd();
+}
+
+int main()
+{  
+    std::unique_ptr&lt;Socket&gt; socket1 = std::make_unique&lt;Socket&gt;(0);  
+    int fd = getSocketFd(socket1);
+    std::cout &lt;&lt; fd &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre></li>
+</ol>
+<pre><code>编译器错误提示如下:
+
+    main.cpp:30:33: error: use of deleted function &apos;std::unique_ptr&lt;_Tp, _Dp&gt;::unique_ptr(const std::unique_ptr&lt;_Tp, _Dp&gt;&amp;) [with _Tp = Socket; _Dp = std::default_delete&lt;Socket&gt;]&apos;
+         int fd = getSocketFd(socket1); 
+    In file included from /usr/local/include/c++/5.2.0/memory:81:0,
+                 from main.cpp:1:
+    /usr/local/include/c++/5.2.0/bits/unique_ptr.h:356:7: note: declared here
+           unique_ptr(const unique_ptr&amp;) = delete;
+
+修改如下:
+
+    int getSocketFd(std::unique_ptr&lt;Socket&gt; socket)
+    {
+        std::unique_ptr&lt;Socket&gt; skt = std::move(socket);
+        return skt-&gt;getFd();
+    }
+
+    int main()
+    {  
+        std::unique_ptr&lt;Socket&gt; socket1 = std::make_unique&lt;Socket&gt;(0);  
+        int fd1 = getSocketFd(std::move(socket1));
+
+        std::cout &lt;&lt; fd1 &lt;&lt; std::endl;
+        return 0;
+    }  
+</code></pre>
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/18/SGI STL 空间配置器/" rel="next" title="SGI STL 空间配置器">
+                <i class="fa fa-chevron-left"></i> SGI STL 空间配置器
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/10/std move/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/lufei5.jpg"
+               alt="初生犊牛" />
+          <p class="site-author-name" itemprop="name">初生犊牛</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#移动语义-move-引入背景"><span class="nav-number">1.</span> <span class="nav-text">移动语义(move)引入背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#swap的实现-交换两个对象"><span class="nav-number">1.1.</span> <span class="nav-text">swap的实现, 交换两个对象.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不必要的拷贝-返回临时对象"><span class="nav-number">1.2.</span> <span class="nav-text">不必要的拷贝,返回临时对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#容器-vector-的操作"><span class="nav-number">1.3.</span> <span class="nav-text">容器 vector 的操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#右值引用、右值"><span class="nav-number">2.</span> <span class="nav-text">右值引用、右值</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#左值与右值"><span class="nav-number">2.1.</span> <span class="nav-text">左值与右值</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#左值-一般位于赋值符号的左边-有名字的值-可以使用-amp-操作符取地址"><span class="nav-number">2.1.1.</span> <span class="nav-text">左值: 一般位于赋值符号的左边, 有名字的值, 可以使用&操作符取地址.</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#右值-一般位于赋值符号的右边-没有名字的值-不能取地址-临时值"><span class="nav-number">2.1.2.</span> <span class="nav-text">右值: 一般位于赋值符号的右边, 没有名字的值, 不能取地址, 临时值.</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#相关问题"><span class="nav-number">2.2.</span> <span class="nav-text">相关问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#右值引用的引入"><span class="nav-number">2.3.</span> <span class="nav-text">右值引用的引入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Move-语义的实现"><span class="nav-number">3.</span> <span class="nav-text">Move 语义的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#移动构造函数"><span class="nav-number">3.1.</span> <span class="nav-text">移动构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#移动赋值运算符"><span class="nav-number">3.2.</span> <span class="nav-text">移动赋值运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#std-move"><span class="nav-number">3.3.</span> <span class="nav-text">std::move()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#std-move-使用场景"><span class="nav-number">4.</span> <span class="nav-text">std::move 使用场景</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">初生犊牛</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>

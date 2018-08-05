@@ -1,0 +1,49 @@
+1. 参照 https://xuanwo.org/2015/03/26/hexo-intor/ 操作
+
+2. 因为是采用git部署，所以hexo d 部署前，在 Hexo 目录下的cmd窗口执行 npm install hexo-deployer-git --save
+
+3. _config.yml 文件中 "deploy" 配置如下
+		type: git
+		#repo: https://github.com/shs19890608/shs19890608.github.io.git
+		repo: git@github.com:shs19890608/shs19890608.github.io.git  
+		branch: master
+	
+	repo 使用ssh地址时，hexo d 部署时总会提示 permission denied 错误，即使按照 https://xuanwo.org/2015/02/07/generate-a-ssh-key/
+	a)打开git bash, 运行 ssh-keygen -t rsa -C "your_email@example.com" 重新生成 ssh key
+	b)运行 eval $(ssh-agent -s) --- 【代替教程中ssh-agent -s 命令，否则 ssh-add出错】
+	c)运行 ssh-add ~/.ssh/id_rsa
+	d)添加ssh key 到 github 中.
+	但是仍然不行，只能使用 https 地址并在每次部署时输入用户名和密码.
+	
+	
+4. 如果修改了hexo的内容，再次部署时，运行 hexo clean, hexo g, hexo d.
+
+5. 参考 https://github.com/hexojs/hexo/issues/1478 也有类似情况
+
+6. repo 问题解决，在git bash，进入Hexo 目录，运行 hexo d 部署， OK!!!!!!!!!!!!
+
+7. 更换主题：
+	参考 https://xuanwo.org/2015/03/26/hexo-intor/ 更换主题章节, 这里采用的主题为 NexT, 精简
+	参考 http://theme-next.iissnan.com/getting-started.html , 下载安装配置主题
+	a. 下载主题
+	b. 启动主题, 在站点配置文件 Hexo/_config.yml 中, theme: next
+	c. 配置主题, 选择 Scheme, 在主题配置文件 Hexo/themes/_config.yml 中, scheme: Pisces
+	d. 设置语言, 在站点配置文件 Hexo/_config.yml 中, language: zh-Hans
+	e. 设置菜单, 
+		1. 添加分类菜单, 在主题配置文件 Hexo/themes/_config.yml 中   categories: /categories 添加到 "menu" 中
+		2. 参考 http://theme-next.iissnan.com/theme-settings.html , 添加分类页面
+			a. 在 Hexo 站点目录下, bash 界面, 运行 “hexo new page categories”, 创建分类页面
+			b. 将刚刚新建的页面的类型设置为 categories, Hexo\source\categories\index.md, type: "categories"
+			c. 文章中要包含分类信息，否则不会显示在分类页面中.
+	f. 设置侧栏,  在主题配置文件 Hexo/themes/_config.yml 中  display: always
+
+			
+8. 添加文章(要包含分类信息)
+	参考 https://xuanwo.org/2015/03/26/hexo-intor/ 添加新文章章节
+	
+	新建的文章头需要添加一些yml信息，如下所示：
+	---
+	title: hello-world   //在此处添加你的标题。
+	date: 2014-11-7 08:55:29   //在此处输入你编辑这篇文章的时间。
+	categories: C++   //在此处输入这篇文章的分类。
+	toc: true  //在此处设定是否开启目录，需要主题支持。

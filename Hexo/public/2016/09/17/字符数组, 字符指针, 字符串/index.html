@@ -1,0 +1,637 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="源码
+C 中对字符串的处理: 字符数组，字符指针字符数组定义与初始化char c[10] = {&amp;apos;C&amp;apos;, &amp;apos; &amp;apos;, &amp;apos;L&amp;apos;, &amp;apos;a&amp;apos;, &amp;apos;n&amp;apos;, &amp;apos;g&amp;apos;, &amp;apos;u&amp;apos;, &amp;apos;a&amp;apos;, &amp;apos;g&amp;apos;, &amp;apos;e&amp;apos;};">
+<meta property="og:type" content="article">
+<meta property="og:title" content="字符串,字符数组,以及字符串指针等相关的操作">
+<meta property="og:url" content="http://yoursite.com/2016/09/17/字符数组, 字符指针, 字符串/index.html">
+<meta property="og:site_name" content="HongShuang's blog">
+<meta property="og:description" content="源码
+C 中对字符串的处理: 字符数组，字符指针字符数组定义与初始化char c[10] = {&amp;apos;C&amp;apos;, &amp;apos; &amp;apos;, &amp;apos;L&amp;apos;, &amp;apos;a&amp;apos;, &amp;apos;n&amp;apos;, &amp;apos;g&amp;apos;, &amp;apos;u&amp;apos;, &amp;apos;a&amp;apos;, &amp;apos;g&amp;apos;, &amp;apos;e&amp;apos;};">
+<meta property="og:updated_time" content="2018-04-07T15:22:34.961Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="字符串,字符数组,以及字符串指针等相关的操作">
+<meta name="twitter:description" content="源码
+C 中对字符串的处理: 字符数组，字符指针字符数组定义与初始化char c[10] = {&amp;apos;C&amp;apos;, &amp;apos; &amp;apos;, &amp;apos;L&amp;apos;, &amp;apos;a&amp;apos;, &amp;apos;n&amp;apos;, &amp;apos;g&amp;apos;, &amp;apos;u&amp;apos;, &amp;apos;a&amp;apos;, &amp;apos;g&amp;apos;, &amp;apos;e&amp;apos;};">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 字符串,字符数组,以及字符串指针等相关的操作 | HongShuang's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">HongShuang's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                字符串,字符数组,以及字符串指针等相关的操作
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-17T08:55:29+08:00" content="2016-09-17">
+              2016-09-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index">
+                    <span itemprop="name">C++</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://github.com/shuanghong/C-Cpp-Programming/blob/master/Char_Array_Ptr_String/CharStringOperation.cpp" target="_blank" rel="external">源码</a></p>
+<h2 id="C-中对字符串的处理-字符数组，字符指针"><a href="#C-中对字符串的处理-字符数组，字符指针" class="headerlink" title="C 中对字符串的处理: 字符数组，字符指针"></a>C 中对字符串的处理: 字符数组，字符指针</h2><h3 id="字符数组"><a href="#字符数组" class="headerlink" title="字符数组"></a>字符数组</h3><h4 id="定义与初始化"><a href="#定义与初始化" class="headerlink" title="定义与初始化"></a>定义与初始化</h4><pre><code>char c[10] = {&apos;C&apos;, &apos; &apos;, &apos;L&apos;, &apos;a&apos;, &apos;n&apos;, &apos;g&apos;, &apos;u&apos;, &apos;a&apos;, &apos;g&apos;, &apos;e&apos;};  
+char c[11] = {&quot;C Language&quot;};  
+char c[11] = &quot;C Language&quot;;  
+char c[] = &quot;C Language&quot;;
+</code></pre><p>定义时初始化可以不指定数组长度, 如 char c[] = “C Language”; 编译器自动处理长度为 11.<br>如果不作初始化赋值, 则必须指定长度, 如 char c[]; 是非法的.  </p>
+<h4 id="结束标志"><a href="#结束标志" class="headerlink" title="结束标志"></a>结束标志</h4><p>C 中总是以 ‘\0’作为串的结束符, ‘\0’由编译器自动加上, ASCII码为NUL.<br>由于采用了’\0’标志, 字符串赋初值时无须指定数组的长度, 字符串处理函数遇到NUL时会认为字符串已经结束.<br>用字符串赋值比用字符逐个赋值要多占一个字节, 用于存放结束标志’\0’, 对于char c[] = “C Language” 其实际存放为</p>
+<pre><code>|C| |L|a|n|g|u|a|g|e|\0|  
+</code></pre><p>如果定义 char c[10] = “C Language”; 编译器会提示初始化的字符串太长.<br>而 char c[10] = {‘C’, ‘ ‘, ‘L’, ‘a’, ‘n’, ‘g’, ‘u’, ‘a’, ‘g’, ‘e’}; 则没有问题.<br>参见<a href="https://github.com/shuanghong/C-Cpp-Programming/blob/master/Char_Array_Ptr_String/CharStringOperation.cpp" target="_blank" rel="external">源码</a> testNul()</p>
+<h4 id="求度-sizeof-与-strlen"><a href="#求度-sizeof-与-strlen" class="headerlink" title="求度, sizeof 与 strlen"></a>求度, sizeof 与 strlen</h4><p>区别:<br>a. sizeof 是运算符, 可以用类型(char/int)作参数; strlen 是函数, 只能用 char* 做参数, 且必须是以’\0’结尾的.<br>b. 数组传递给 sizeof 作参数时不退化, 仍然代表整个数组, 传递给strlen时则退化为指针处理.</p>
+<pre><code>大部分编译程序在编译阶段就把 sizeof 计算过了, 是类型或变量的长度, 这就是sizeof(x)可以用来定义数组维数的原因.  
+</code></pre><p>c. sizeof 计算的是分配的字符数组所占的实际内存空间的大小, 不受里面存储的内容改变, 即使在字符数组没有终止符’\0’ 的    时候, 也能够计算出数组长度; strlen 计算字符串的长度, 以’\0’为字符串结束.<br>参见<a href="https://github.com/shuanghong/C-Cpp-Programming/blob/master/Char_Array_Ptr_String/CharStringOperation.cpp" target="_blank" rel="external">源码</a> calCharArrayLength()  </p>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>a. 如果用字符初始化字符数组</p>
+<pre><code>char c[11] = {&apos;C&apos;, &apos; &apos;, &apos;L&apos;, &apos;a&apos;, &apos;n&apos;, &apos;g&apos;, &apos;u&apos;, &apos;a&apos;, &apos;g&apos;, &apos;e&apos;};  
+char c[11] = {&apos;C&apos;, &apos; &apos;, &apos;L&apos;, &apos;a&apos;, &apos;n&apos;, &apos;g&apos;, &apos;u&apos;, &apos;a&apos;, &apos;g&apos;, &apos;e&apos;, &apos;\0&apos;};  
+char c[] = {&apos;C&apos;, &apos; &apos;, &apos;L&apos;, &apos;a&apos;, &apos;n&apos;, &apos;g&apos;, &apos;u&apos;, &apos;a&apos;, &apos;g&apos;, &apos;e&apos;, &apos;\0&apos;};  
+</code></pre><p>三者等价, length 为 10, size 为 11</p>
+<pre><code>char c[10] = {&apos;C&apos;, &apos; &apos;, &apos;L&apos;, &apos;a&apos;, &apos;n&apos;, &apos;g&apos;, &apos;u&apos;, &apos;a&apos;, &apos;g&apos;, &apos;e&apos;};  
+char c[] = {&apos;C&apos;, &apos; &apos;, &apos;L&apos;, &apos;a&apos;, &apos;n&apos;, &apos;g&apos;, &apos;u&apos;, &apos;a&apos;, &apos;g&apos;, &apos;e&apos;};
+</code></pre><p>两者等价, 长度未知, 因为没有结束符. <strong>不应使用</strong>, 容易出现数组越界, 导致非法访问.<br>源码中 c1[10] strlen = 20, sizeof = 10, 说明字符串长度为20,但实际分配的内存大小为10.</p>
+<pre><code>char c1[10] = {&apos;C&apos;, &apos; &apos;, &apos;L&apos;, &apos;a&apos;, &apos;n&apos;, &apos;g&apos;, &apos;u&apos;, &apos;a&apos;, &apos;g&apos;, &apos;e&apos;};
+//strlen = 20, sizeof = 10.  
+</code></pre><p>b. 如果用字符串初始化数组, 则</p>
+<pre><code>char c[11] = &quot;C Language&quot;;    // 指定数组长度, 定义时可以不初始赋值 
+char c[] = &quot;C Language;        // 不指定数组长度, 编译器自动处理长度为11, 定义时必须初始赋值, 字符串长度一定要用 strlen
+</code></pre><h3 id="字符指针"><a href="#字符指针" class="headerlink" title="字符指针"></a>字符指针</h3><h4 id="定义与初始化-1"><a href="#定义与初始化-1" class="headerlink" title="定义与初始化"></a>定义与初始化</h4><pre><code>const char *string_ptr = &quot;C language&quot;;    // 用字符串初始化
+
+string[] = &quot;C language&quot;;  
+const char *string_ptr = string;        // 用字符数组初始化  
+</code></pre><p>参见<a href="https://github.com/shuanghong/C-Cpp-Programming/blob/master/Char_Array_Ptr_String/CharStringOperation.cpp" target="_blank" rel="external">源码</a> charPtrInit()</p>
+<p>ps. C++11, 字符串指针需用 const 声明, 否则编译出错.<br>参考 <a href="http://stackoverflow.com/questions/20944784/why-is-conversion-from-string-constant-to-char-valid-in-c-but-invalid-in-c" target="_blank" rel="external">http://stackoverflow.com/questions/20944784/why-is-conversion-from-string-constant-to-char-valid-in-c-but-invalid-in-c  </a>  </p>
+<h4 id="与字符数组的区别"><a href="#与字符数组的区别" class="headerlink" title="与字符数组的区别"></a>与字符数组的区别</h4><p>字符数组是一个数组, 每个元素的值都可以改变; 而字符串指针指向的是一个<strong>常量字符串, 它被存放在程序的静态数据区, 一旦定义就不能改变</strong>.<br>参见<a href="https://github.com/shuanghong/C-Cpp-Programming/blob/master/Char_Array_Ptr_String/CharStringOperation.cpp" target="_blank" rel="external">源码</a> modifyCharPtrValue()  </p>
+<pre><code>注: *ptr 指向的内容不能改变, 但是 ptr 指针本身可以改变, 可以指向其他的字符串.
+</code></pre><h4 id="对字符串系列操作"><a href="#对字符串系列操作" class="headerlink" title="对字符串系列操作"></a>对字符串系列操作</h4><p>参考<br><a href="http://c.biancheng.net/cpp/u/hs2/" target="_blank" rel="external">http://c.biancheng.net/cpp/u/hs2/</a><br><a href="http://www.cplusplus.com/reference/cstring/strcpy/?kw=strcpy" target="_blank" rel="external">http://www.cplusplus.com/reference/cstring/strcpy/?kw=strcpy</a></p>
+<pre><code>用 strncpy() 代替 strcpy(),  strncat() 代替 strcat(), strncmp() 代替 strcmp().
+</code></pre><h2 id="C-中对字符串的处理-string-类"><a href="#C-中对字符串的处理-string-类" class="headerlink" title="C++ 中对字符串的处理: string 类"></a>C++ 中对字符串的处理: string 类</h2><p>C++ 增强了对字符串的支持，既可以使用C风格的字符数组, 字符串，还可以使用内置的数据类型 string 类.  </p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>string 类有多种初始化方式, 详尽的参考 <a href="http://www.cplusplus.com/reference/string/string/string/" target="_blank" rel="external">http://www.cplusplus.com/reference/string/string/string/</a><br>常用的是直接用字符串初始化, 如 std::string s = “c++ language”;</p>
+<h3 id="与-const-char-互转"><a href="#与-const-char-互转" class="headerlink" title="与 const char* 互转"></a>与 const char* 互转</h3><p>参见<a href="https://github.com/shuanghong/C-Cpp-Programming/blob/master/Char_Array_Ptr_String/CharStringOperation.cpp" target="_blank" rel="external">源码</a> stringToCharPtr()</p>
+<p>注意: str.c_str() 返回 const char* 指针, 指向以空字符结尾的字符数组, 数组内容等于 string 对象内容.</p>
+<ul>
+<li><p>虽然是 const char<em>, 一般来说指向的内容不可改变. 但是 string 类的实现实际上封装着一个 char 指针, c_str() 直接返回该指针的引用, 其生命周期是 string 对象的生命期, 由 string 管理. 因此 const char</em> 指向的字符数组是临时的, 当有改变这些数据的成员函数被调用后, 其中的数据就会失效.</p>
+<pre><code>std::string str = &quot;C/C++ language&quot;;
+const char* str_ptr = str.c_str();
+
+str[1] = &apos;&amp;&apos;;
+printf(&quot;char ptr change: %s\n&quot;, str_ptr);    // 输出 C&amp;C++ language
+str = &quot;C++ language&quot;;
+printf(&quot;char ptr change: %s\n&quot;, str_ptr);    // 输出 C++ language
+</code></pre></li>
+<li><p>c_str() 的指针，不需要手动释放或删除, 指针的生命周期与 string 一致</p>
+</li>
+</ul>
+<p>所以, 如果想继续 c_str() 指向的数组, 先 copy, 再使用. 否则因为 string 对象的改变会导致的错误将是不可想象</p>
+<pre><code>char* str_cpoy = new char;
+std::string str = &quot;C/C++ language&quot;;
+
+strncpy(str_cpoy, str.c_str(), str.length()+1);
+str = &quot;C++ language&quot;;
+
+printf(&quot;%s\n&quot;, str_cpoy);    // str 对象改变但输出不变: C/C++ language
+</code></pre><h3 id="与-char-之间互转"><a href="#与-char-之间互转" class="headerlink" title="与 char[] 之间互转"></a>与 char[] 之间互转</h3><p>参见<a href="https://github.com/shuanghong/C-Cpp-Programming/blob/master/Char_Array_Ptr_String/CharStringOperation.cpp" target="_blank" rel="external">源码</a> stringTocharArray()</p>
+<ul>
+<li><p>注意: char <em>strncpy(char </em>dest, const char *src, std::size_t count);</p>
+<p>  复制 src 所指向的字符串至多 count 个字符<strong>（包含终止空字符）</strong>到 dest 所指向的字符数组.<br>  若在复制整个字符串 src 前抵达 count ，则产生的字符数组不是空终止的;<br>  若在复制来自 src 的终止空字符后未抵达 count, 则写入额外的空字符到 dest, 直至写入总共 count 个字符;<br>  若字符串重叠, 则行为未定义!!!</p>
+<pre><code>char char_array[15];
+strncpy(char_array, str.c_str(), str.length()+1);        // include null-terminated character 
+</code></pre></li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/18/SGI STL 空间配置器/" rel="prev" title="SGI STL 空间配置器">
+                SGI STL 空间配置器 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/lufei5.jpg"
+               alt="初生犊牛" />
+          <p class="site-author-name" itemprop="name">初生犊牛</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#C-中对字符串的处理-字符数组，字符指针"><span class="nav-number">1.</span> <span class="nav-text">C 中对字符串的处理: 字符数组，字符指针</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#字符数组"><span class="nav-number">1.1.</span> <span class="nav-text">字符数组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义与初始化"><span class="nav-number">1.1.1.</span> <span class="nav-text">定义与初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结束标志"><span class="nav-number">1.1.2.</span> <span class="nav-text">结束标志</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#求度-sizeof-与-strlen"><span class="nav-number">1.1.3.</span> <span class="nav-text">求度, sizeof 与 strlen</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结论"><span class="nav-number">1.1.4.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符指针"><span class="nav-number">1.2.</span> <span class="nav-text">字符指针</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义与初始化-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">定义与初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#与字符数组的区别"><span class="nav-number">1.2.2.</span> <span class="nav-text">与字符数组的区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对字符串系列操作"><span class="nav-number">1.2.3.</span> <span class="nav-text">对字符串系列操作</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-中对字符串的处理-string-类"><span class="nav-number">2.</span> <span class="nav-text">C++ 中对字符串的处理: string 类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">2.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#与-const-char-互转"><span class="nav-number">2.2.</span> <span class="nav-text">与 const char* 互转</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#与-char-之间互转"><span class="nav-number">2.3.</span> <span class="nav-text">与 char[] 之间互转</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">初生犊牛</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>
