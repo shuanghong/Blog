@@ -20,7 +20,7 @@ toc: true
 ### Universal reference 判定
 判断是否为 universal reference, 主要根据以下两点:
 
-* 类型必须为 T&&, 加上 const 修饰就不是 universal reference 了, 比如下面的 param 参数为rvalue reference 而不是 universal reference
+* 类型必须为 T&&, 加上 const 修饰就不是 universal reference 了, 比如下面的 参数类型 T&& 为 rvalue reference 而不是 universal reference
 
 		template<typename T>
 		void f(const T&& param);
@@ -29,11 +29,11 @@ toc: true
 	常用的情况是在函数模板中, 如
  
 		template<typename T>
-		void f(T&& param);              // param 是一个 universal reference
+		void f(T&& param);              // param 类型是一个 universal reference
 	
 	还有就是 auto, 如果一个对象的类型被定义为auto&&, 则此对象为 universal reference. 如前面的例子.
 
-类型为 T&& 以及参与类型推导缺一不可, 如以下 vector 类中的 push_back 函数, 虽然参数类型为T&&，但是并未参与类型推导. vector 模板实例化的时候, T的类型是已经被推导. 当编译器再去定义push_back() 是, T 已经被推导出来了, 因此 T&& 是 rvalue reference.
+类型为 T&& 以及参与类型推导缺一不可, 如以下 vector 类中的 push_back 函数, 虽然参数类型为T&&，但是并未参与类型推导. vector 模板实例化的时候, T的类型已经被推导. 当编译器再去定义push_back() 时, T 已经被推导出来了, 因此 T&& 是 rvalue reference.
 
 	template<class T, class Allocator = allocator<T>>
 	class vector {
