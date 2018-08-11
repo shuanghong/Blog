@@ -65,16 +65,35 @@ ps. emplace_back的类型参数被命名为 Args 而不是 T, 我们前面说到
 	template<typename MyTemplateType>
     void Func(MyTemplateType&& param); // param是一个 universal reference
 
-universal reference 即可以是 lvalue reference, 也可以是 rvalue reference,  那么如何确定 universal reference 的引用类型呢? 规则如下:
+### Template 类型推导
+如下函数模板定义
 
-* 如果函数模板传入参数类型是左值, 那么 T&& 中的 T 将被推导成 T&, T&& 就是一个 lvalue reference.
-* 如果函数模板传入参数类型是右值, 那么 T&& 中的 T 将被推导成原生类型, T&& 就是一个 rvalue reference.
+	template<typename T>
+	void f(ParamType param);
 
-这里涉及到了编译器的 reference collapsing(引用折叠)规则
+	f(expr);
+
+编译器根据 expr 来推导两个类型: T 和 ParamType, 通常这两个类型是不一样的, ParamType 常常包含一些修饰符, 如下:
+
+	template<typename T>
+	void f(const T& param);
+
+编译器对 T 类型推导时, 不仅仅取决于调用时传入的 expr 类型, 同时取决于 ParamType, 有3种不同的情况:
+
+* ParamType 是指针或引用, 但不是一个universal引用
+* ParamType 是 universal 引用
+* ParamType 不是指针也不是引用
+
+当 ParamType 是 universal 引用时, 规则如下:
+
+* 如果 expr 是一个左值, 则 T 会被推导成左值引用, ParamType 也会被推导成左值引用(采用引用折叠规则), 虽然在语法上被声明成一个右值引用
+* 如果 expr 是一个右值, 则 T 的类型与 expr 类型相同
+
+参考 [http://https://www.cnblogs.com/boydfd/p/4950334.html](http://https://www.cnblogs.com/boydfd/p/4950334.html)
 
 ### References Collasping
 
-当编译器推导模板类型时, 如果出现 "对引用的引用"(reference to reference), 就会将自动将那些 references "合并"起来. 比如传入的参数是左值, T 被推导成int&, 那么 T&& 就会变成 int& &&, 这个时候就会发生 references collasping, 使得
+当编译器推导模板类型时, 如果出现 "对引用的引用"(reference to reference), 就会将自动将那些 references "合并"起来. ParamType 是 universal reference 时,调用传入左值, T 被推导成int&, 那么 T&& 就会变成 int& &&, 这个时候就会发生 references collasping, 使得
 
 	T&&  ⇒  int& &&  ⇒  int&
 
@@ -106,9 +125,48 @@ References collasping 的规则如下:
 	f(r1);	// 虽然r1, r2 一个是右值引用, 一个是左值引用, 但是由于r1 与 r2 都是左值, 所以最终得到的类型都是左值引用 int&.
 	f(r2);
 
-T&& 作为 universal reference时, 既能绑定到左值(就像左值引用)上去, 也能绑定到右值(就像右值引用)上去. 既能绑定到 const 或者 非const 对象上去, 也能绑定到volatile 或 非volatile 对象上去, 甚至能绑定到 const volatile 对象上去, 它能绑定到几乎任何东西上去.
+T&& 作为 universal reference 时, 既能绑定到左值(就像左值引用)上去, 也能绑定到右值(就像右值引用)上去. 既能绑定到 const 或者 非const 对象上去, 也能绑定到volatile 或 非volatile 对象上去, 甚至能绑定到 const volatile 对象上去, 它能绑定到几乎任何东西上去.
 
 参考:  
 [http://www.fastdrivers.org/zh-cn/archive/cpp-universal-ref-move-zh-cn.html](http://www.fastdrivers.org/zh-cn/archive/cpp-universal-ref-move-zh-cn.html)  
 [https://www.sczyh30.com/posts/C-C/cpp-move-semantic/](https://www.sczyh30.com/posts/C-C/cpp-move-semantic/)  
 [http://www.cnblogs.com/boydfd/p/5251797.html](http://www.cnblogs.com/boydfd/p/5251797.html)
+
+## std::move 标准库实现
+
+在 std::move() 的标准库实现中, 其参数类型就是 universal reference.
+
+	template<teypename T>
+	typename remove_reference<T>::type&& move(T&& t) noexcept
+	{
+		return static_cast<typename remove_reference<T>::type&&>(t);
+	}
+
+当调用时传递给 move(T&& t) 的实参为分别左值和右值时, 其推导过程不同.
+
+	string s1("hi");
+	string s2 = std::move(string("hi"));
+	string s3 = std::move(s1);
+
+在执行 s2 时, 流程如下:
+
+* string("hi") 是右值, 根据 Template 推导规则, T 为 string 类型
+* remove_reference 用 string 进行实例化, remove_reference<string>::type 是 string
+* move() 返回类型是 string&&
+* move() 参数 t 类型为 string&&
+
+这个调用实例化为 string&& move(string&& t), 函数体返回 static_cast<string&&>(t), t 的类型本身为 string&&, static_cast 什么都不做, std::move() 的结果就是返回右值引用.
+
+在执行 s3 时, 流程如下:
+
+* s1 是左值, 根据 Template 推导规则, T 为 string&(string 引用)
+* remove_reference 用 string& 进行实例化, remove_reference<string>::type 仍然是 string
+* move() 返回类型是 string&&
+* move() 参数 t 类型为 string& &&, 折叠为 string&
+
+这个调用, 实例化的结果为: string&& move(string& t), 虽然 t 类型为 string&, 但是 static_cast 将其转换为 string&& 并返回.
+
+因此, std::move() 的工作就是将传入的参数转换成其对应的右值引用类型.
+
+
+
