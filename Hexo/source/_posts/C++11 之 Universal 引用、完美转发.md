@@ -168,5 +168,70 @@ T&& 作为 universal reference 时, 既能绑定到左值(就像左值引用)上
 
 因此, std::move() 的工作就是将传入的参数转换成其对应的右值引用类型.
 
+## 完美转发(Perfect forwarding)
+
+### 引入背景
+
+有的时候, 我们需要将一个函数的参数原封不动地传递给另一个函数. 这里不仅需要参数的值不变, 而且需要参数的类型属性(左值、右值, const、volatile)保持不变, 这叫做 Perfect Forwarding(完美转发).
+
+	template <typename T>
+	void func(T t)
+	{
+	    cout << "func()" << endl;
+	}
+	
+	template <typename T>
+	void forwarding(T t)
+	{
+	    func(t);
+	}
+上面的代码中, forwarding 是一个转发函数模板, func 是真正执行代码的目标函数. 对于func 而言, 它总是希望转发函数将参数按照调用 forwarding 时的类型传递, 即传入  forwarding 的是左值对象, func 就能获得左值对象, 即传入 forwarding 的是右值对象, func 就能获得右值对象, 而不产生额外的开销, 就好像转发函数不存在一样.
+
+上面的例子中, 函数 forwarding 中使用了最基本类型进行转发, 参数 t 在传给 func 时产生了一次额外的对象拷贝, 这样的转发只能说是正确的转发, 但是不完美.
+
+为了避免拷贝, 我们需要将 forwarding 参数设为引用类型, 具体如下:
+
+* 为了传递非 const 左值, forwarding  形参 t 必须为 T& 类型或者 const T& 类型
+* 为了传递 const 左值, forwarding 形参 t 必须为 const T& 类型
+* 为了传递非 const 右值, forwarding 形参 t 必须为 const T& 类型或者 T&& 类型或者 const T&& 类型
+* 为了传递 const 右值, forwarding 形参 t 必须为 const T& 类型或者 const T&& 类型
+
+似乎只要将 forwarding 参数类型设为 const T& 即可, 上节也提到, const 左值引用可以绑定到任何类型.
+
+	template <typename T>
+	void func(T t)
+	{
+	    cout << "func()" << endl;
+	}
+	
+	template <typename T>
+	void forwarding(const T& t)
+	{
+	    func(t);
+	}
+
+但是当目标函数 func 的参数类型是一个普通的非 const 类型时, 无法接受 const 引用作为参数.
+
+	void func(int t)
+	{
+	    t = ....
+	}
+
+并且当传入 forwarding 是一个右值时, 其函数体 func(t) 中的 t 却是一个具名的左值.
+
+### std::forward 实现完美转发
+C++11 中使用 std::forward 结合 universal reference 实现了完美转发.
+
+	template <typename T>
+	void func(T t)
+	{
+	    cout << "func()" << endl;
+	}
+	
+	template <typename T>
+	void forwarding(T&& t)
+	{
+	    func(std::forward<T>t);
+	}
 
 
