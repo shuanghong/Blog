@@ -6,7 +6,7 @@ toc: true
 ---
 
 ## Universal reference
-上节提到 C++11 以后, 类型T的右值引用表示为 T&&, 然而并不是所有的形如 T&& 的类型都是右值引用, 有两种情况: 一种是普通的 rvalue reference, 另一种称为 universal reference(万能引用). 它既可能表示 lvalue reference, 也可能表示 rvalue reference.
+[上节](https://shs19890608.github.io/2018/04/01/C++11%20%E4%B9%8B%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8%E3%80%81%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/)提到 C++11 以后, 类型T的右值引用表示为 T&&, 然而并不是所有的形如 T&& 的类型都是右值引用, 有两种情况: 一种是普通的 rvalue reference, 另一种称为 universal reference(万能引用). 它既可能表示 lvalue reference, 也可能表示 rvalue reference.
 
 	Widget&& var1 = someWidget;  // var1 是个普通的右值引用
 	auto&& var3 = var1;  //var3 是个universal reference, 由于var1 是左值,所以推导结果是左值引用
@@ -196,7 +196,7 @@ T&& 作为 universal reference 时, 既能绑定到左值(就像左值引用)上
 * 为了传递非 const 右值, forwarding 形参 t 必须为 const T& 类型或者 T&& 类型或者 const T&& 类型
 * 为了传递 const 右值, forwarding 形参 t 必须为 const T& 类型或者 const T&& 类型
 
-似乎只要将 forwarding 参数类型设为 const T& 即可, 上节也提到, const 左值引用可以绑定到任何类型.
+似乎只要将 forwarding 参数类型设为 const T& 即可, [上节](https://shs19890608.github.io/2018/04/01/C++11%20%E4%B9%8B%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8%E3%80%81%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/)也提到, const 左值引用可以绑定到任何类型.
 
 	template <typename T>
 	void func(T t)
@@ -219,19 +219,65 @@ T&& 作为 universal reference 时, 既能绑定到左值(就像左值引用)上
 
 并且当传入 forwarding 是一个右值时, 其函数体 func(t) 中的 t 却是一个具名的左值.
 
-### std::forward 实现完美转发
-C++11 中使用 std::forward 结合 universal reference 实现了完美转发.
+### 保持类型信息的函数参数
+通过将转发函数 forwarding 的参数类型定义为 universal reference, 可以保持其对应实参的所有类型信息. 而使用引用参数(无论是左值还是右值)使得我们可以保持 const 属性, 因为在引用类型中的 const 是底层的, 如果我们把参数参数定义为 T1&& 和 T2&&, 通过引用折叠就可以保持转发实参的左值/右值属性.(摘自 C++ Ptimer 5th Chapter 16.2.7)
 
 	template <typename T>
-	void func(T t)
+	void forwarding(T&& t)
 	{
-	    cout << "func()" << endl;
+	    func(t);
 	}
+
+然而这样的 forwarding 并不能接受传入右值, 比如我们想要执行下面的目标函数, forwarding 在调用 func 时 t 变成了一个左值.
+
+	void func(int&& t)
+	{
+	    std::cout << "int&&\n";
+	}
+
+因此我们需要在转发调用的时候保持 t 的类型属性.
+
+### std::forward 实现完美转发
+C++11 中使用 std::forward 实现了完美转发
+
+	template <typename T>
+	void forwarding(T&& t)
+	{
+	    func(std::forward<T>(t));
+	}
+
+通过下面的例子, 实现对不同参数类型的目标函数的调用.
+
+	//void process_value(int i) { std::cout << "int\n"; }
+	void func(int& i) { std::cout << "int&\n"; }
+	void func(const int& i) { std::cout << "const int&\n"; }
+	void func(int&& i) { std::cout << "int&&\n"; }
+	void func(const int&& i) { std::cout << "const int&&\n"; }
 	
 	template <typename T>
 	void forwarding(T&& t)
 	{
-	    func(std::forward<T>t);
+		func(std::forward<T>(t));
 	}
+	 
+	int main()
+	{   
+	    int a = 0;
+	    forwarding(a);
+	    
+	    const int b = 0;
+	    forwarding(b);
+	    
+	    forwarding(std::move(a));
+	    forwarding(std::move(b));
+	    
+	    return 0;
+	}
+output:
+
+	int&
+	const int&
+	int&&
+	const int&&
 
 
