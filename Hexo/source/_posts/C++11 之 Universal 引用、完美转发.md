@@ -31,7 +31,13 @@ toc: true
 		template<typename T>
 		void f(T&& param);              // param 类型是一个 universal reference
 	
-	还有就是 auto, 如果一个对象的类型被定义为auto&&, 则此对象为 universal reference. 如前面的例子.
+	还有就是 auto, 如果一个对象的类型被定义为auto&&, 则此对象为 universal reference, 如前面例子以及下面的代码
+
+		int i = 0;
+		
+		// int&& j = i;	error: cannot bind rvalue reference of type 'int&&' to lvalue of type 'int'
+		auto&& j = i;	// universal reference 不同于普通的右值引用, 可以绑定到左值
+		auto&& k = 0;	// universal reference 也可以绑定到右值
 
 类型为 T&& 以及参与类型推导缺一不可, 如以下 vector 类中的 push_back 函数, 虽然参数类型为T&&，但是并未参与类型推导. vector 模板实例化的时候, T的类型已经被推导. 当编译器再去定义push_back() 时, T 已经被推导出来了, 因此 T&& 是 rvalue reference.
 
