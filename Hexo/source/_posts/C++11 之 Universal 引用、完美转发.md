@@ -225,6 +225,41 @@ T&& 作为 universal reference 时, 既能绑定到左值(就像左值引用)上
 
 并且当传入 forwarding 是一个右值时, 其函数体 func(t) 中的 t 却是一个具名的左值.
 
+### 简单工厂方法的定义
+完美转发要解决的另外一个问题就是如下简单工厂方法, 为了避免拷贝, 参数设为引用.
+
+	template<typename T, typename Arg> 
+	shared_ptr<T> create(Arg& arg)
+	{ 
+	  return shared_ptr<T>(new T(arg));
+	}
+一个完美的工厂方法应该满足以下特征:
+
+* 可以处理任意数量的参数
+* 能够接受左值和右值作为参数
+* 将参数完全不变地转发到构造函数中, 如同没有工厂函数一样
+
+上面的实现中, 无法接受右值作为参数, 解决这个问题主要有两种方法:
+
+1. 修改参数类型为 const Arg& arg, 这样右值就能绑定到 const 左值引用上去. 但是这样有个问题就是无法修改参数
+2. 重载工厂方法, 如下
+
+		template<typename T, typename Arg> 
+		shared_ptr<T> create(Arg& arg)
+		{ 
+		  return shared_ptr<T>(new T(arg));
+		}
+	
+		template<typename T, typename Arg> 
+		shared_ptr<T> create(const Arg& arg)
+		{ 
+		  return shared_ptr<T>(new T(arg));
+		}
+但是重载函数模板仍然有如下问题:
+
+* 如果有多个参数, 就会有更多的重载.
+* 如果T的构造函数需要一个右值, 则无法正常运行, 因为传入的 arg 在工厂方法内部变成了一个左值.
+
 ### 保持类型信息的函数参数
 通过将转发函数 forwarding 的参数类型定义为 universal reference, 可以保持其对应实参的所有类型信息. 而使用引用参数(无论是左值还是右值)使得我们可以保持 const 属性, 因为在引用类型中的 const 是底层的, 如果我们把参数参数定义为 T1&& 和 T2&&, 通过引用折叠就可以保持转发实参的左值/右值属性.(摘自 C++ Ptimer 5th Chapter 16.2.7)
 
@@ -285,5 +320,14 @@ output:
 	const int&
 	int&&
 	const int&&
+
+工厂方法的定义如下:
+
+	template<typename T, typename Arg> 
+	shared_ptr<T> create(Arg&& arg)
+	{ 
+	  return shared_ptr<T>(new T(std::forward<Arg>arg));
+	}
+
 
 
